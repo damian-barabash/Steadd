@@ -24,6 +24,8 @@ jobs:
           node-version: 20
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Install deps
         run: npm install
       - name: Build
