@@ -1,0 +1,112 @@
+import { createContext, useContext, useState, useCallback } from "react";
+
+/* ---------------- Icons (lucide-style inline SVG) ---------------- */
+const S = (p) => ({ width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", ...p });
+export const Icon = {
+  dashboard: (p) => <svg {...S(p)}><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>,
+  chat: (p) => <svg {...S(p)}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  leads: (p) => <svg {...S(p)}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>,
+  content: (p) => <svg {...S(p)}><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>,
+  knowledge: (p) => <svg {...S(p)}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
+  settings: (p) => <svg {...S(p)}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  admin: (p) => <svg {...S(p)}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  logout: (p) => <svg {...S(p)}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  plus: (p) => <svg {...S(p)}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  menu: (p) => <svg {...S(p)}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  trash: (p) => <svg {...S(p)}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  bolt: (p) => <svg {...S(p)}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  send: (p) => <svg {...S(p)}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  globe: (p) => <svg {...S(p)}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  sun: (p) => <svg {...S(p)}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>,
+  moon: (p) => <svg {...S(p)}><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>,
+};
+
+import { useTheme } from "../lib/theme";
+export function Logo({ height = 30, style }) {
+  const { theme } = useTheme();
+  const src = theme === "light" ? "./LOGO_STEAD_light.png" : "./LOGO_STEAD.png";
+  return <img src={src} alt="STEADD" style={{ height, ...style }} />;
+}
+export function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  return (
+    <button className="theme-toggle" onClick={toggle} aria-label="Toggle theme" title={theme === "dark" ? "Light" : "Dark"}>
+      {theme === "dark" ? <Icon.sun /> : <Icon.moon />}
+    </button>
+  );
+}
+
+/* ---------------- Spinner ---------------- */
+export const Spinner = () => <span className="spin" />;
+
+/* ---------------- Skeletons ---------------- */
+export function Skeleton({ w = "100%", h = 14, r = 8, style }) {
+  return <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
+}
+export function SkeletonStats({ n = 4 }) {
+  return (
+    <div className="stats">
+      {Array.from({ length: n }).map((_, i) => (
+        <div key={i} className="stat"><Skeleton w="46%" h={28} /><Skeleton w="68%" h={12} style={{ marginTop: 12 }} /></div>
+      ))}
+    </div>
+  );
+}
+export function SkeletonList({ n = 4, h = 66 }) {
+  return <div className="grid">{Array.from({ length: n }).map((_, i) => <Skeleton key={i} h={h} r={12} />)}</div>;
+}
+export function SkeletonCard({ lines = 3 }) {
+  return (
+    <div className="card">
+      <Skeleton w="40%" h={16} />
+      {Array.from({ length: lines }).map((_, i) => <Skeleton key={i} h={12} style={{ marginTop: 10 }} />)}
+    </div>
+  );
+}
+
+/* ---------------- Field ---------------- */
+export function Field({ label, children, hint }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {label && <label>{label}</label>}
+      {children}
+      {hint && <div className="small muted" style={{ marginTop: 5 }}>{hint}</div>}
+    </div>
+  );
+}
+
+/* ---------------- Modal ---------------- */
+export function Modal({ title, onClose, children, width }) {
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" style={width ? { width } : null} onClick={(e) => e.stopPropagation()}>
+        {title && <h3>{title}</h3>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Toast ---------------- */
+const ToastCtx = createContext(null);
+export function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+  const push = useCallback((msg, kind = "ok") => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((t) => [...t, { id, msg, kind }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3400);
+  }, []);
+  return (
+    <ToastCtx.Provider value={push}>
+      {children}
+      <div className="toast-wrap">
+        {toasts.map((t) => <div key={t.id} className={`toast ${t.kind === "err" ? "err" : t.kind === "ok" ? "ok" : ""}`}>{t.msg}</div>)}
+      </div>
+    </ToastCtx.Provider>
+  );
+}
+export const useToast = () => useContext(ToastCtx) || (() => {});
+
+export function copyText(text) {
+  navigator.clipboard?.writeText(text);
+}
