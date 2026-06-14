@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useT } from "../lib/i18n";
+import { useTheme } from "../lib/theme";
 import { Icon, ThemeToggle, Modal, Field, Spinner, Logo } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import LandingChat from "../components/LandingChat";
@@ -240,8 +241,10 @@ function Feature({ rev, eye, h, p, list, demo }) {
 export default function Landing() {
   const { lang, setLang } = useT();
   const c = L[lang] || L.pl;
+  const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   useEffect(() => { const f = () => setScrolled(scrollY > 10); addEventListener("scroll", f); return () => removeEventListener("scroll", f); }, []);
 
   return (
@@ -249,9 +252,19 @@ export default function Landing() {
       <nav className={"lp-nav" + (scrolled ? " scrolled" : "")}>
         <Logo height={42} style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }} />
         <div className="spacer" style={{ flex: 1 }} />
-        <ThemeToggle />
-        <button className="btn ghost sm" onClick={() => setLang(lang === "pl" ? "en" : "pl")}><Icon.globe /> {lang === "pl" ? "PL" : "EN"}</button>
-        <Link to="/login" className="btn primary">{c.panel}</Link>
+        <div className="lp-actions">
+          <ThemeToggle />
+          <button className="btn ghost sm" onClick={() => setLang(lang === "pl" ? "en" : "pl")}><Icon.globe /> {lang === "pl" ? "PL" : "EN"}</button>
+          <Link to="/login" className="btn primary">{c.panel}</Link>
+        </div>
+        <button className="lp-burger" onClick={() => setNavOpen((o) => !o)} aria-label="Menu"><Icon.menu /></button>
+        {navOpen && (
+          <div className="lp-menu" onClick={() => setNavOpen(false)}>
+            <button className="btn ghost block" onClick={() => setLang(lang === "pl" ? "en" : "pl")}><Icon.globe /> {lang === "pl" ? "Polski" : "English"}</button>
+            <button className="btn ghost block" onClick={toggle}>{theme === "dark" ? <><Icon.sun /> Light</> : <><Icon.moon /> Dark</>}</button>
+            <Link to="/login" className="btn primary block">{c.panel}</Link>
+          </div>
+        )}
       </nav>
 
       <main className="lp-main">

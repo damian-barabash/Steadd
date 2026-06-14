@@ -11,9 +11,15 @@
   border: 1px solid var(--border-2); box-shadow: var(--shadow-lg); background: var(--glass-strong);
 }
 .lp-nav img { height: 42px; }
+.lp-actions { display: flex; align-items: center; gap: 10px; }
+.lp-burger { display: none; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; color: var(--text); margin-left: auto; }
+.lp-burger:hover { background: var(--surface-2); }
+.lp-menu { position: absolute; top: 100%; right: 12px; margin-top: 10px; background: var(--glass-strong); backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%); border: 1px solid var(--border-2); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 200px; box-shadow: var(--shadow-lg); }
 @media (max-width: 640px) {
   .lp-nav img { height: 30px !important; }
   .lp-nav { padding-left: 4vw; padding-right: 4vw; }
+  .lp-actions { display: none; }
+  .lp-burger { display: inline-flex; }
 }
 .lp-main { position: relative; z-index: 10; }
 .lp-wrap { max-width: 1080px; margin: 0 auto; padding: 0 5vw; }
