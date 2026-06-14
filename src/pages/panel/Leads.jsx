@@ -180,6 +180,77 @@ function LeadsList({ project }) {
   );
 }
 
+function MailPreview({ f, project }) {
+  const { t } = useT();
+  return (
+    <div style={{ background: "#fff", color: "#15151f", borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+      <div style={{ background: f.brand_color || "#0e108b", padding: "16px 18px", display: "flex", alignItems: "center", gap: 10, minHeight: 34 }}>
+        {f.logo_url ? <img src={f.logo_url} alt="" style={{ height: 28, maxWidth: 180 }} /> : <strong style={{ color: "#fff" }}>{project.business_name || project.name}</strong>}
+      </div>
+      <div style={{ padding: 18 }}>
+        <p style={{ marginTop: 0 }}>Dzień dobry,</p>
+        <p style={{ color: "#444", fontSize: 14, lineHeight: 1.6 }}>{t("mail.sample")}</p>
+        {f.signature && <div style={{ whiteSpace: "pre-wrap", marginTop: 18, fontSize: 14 }}>{f.signature}</div>}
+      </div>
+      {f.footer && <div style={{ padding: "12px 18px", borderTop: "1px solid #eee", color: "#8a8a96", fontSize: 11, whiteSpace: "pre-wrap" }}>{f.footer}</div>}
+    </div>
+  );
+}
+
+function MailEditor({ project }) {
+  const { t } = useT();
+  const toast = useToast();
+  const [f, setF] = useState({ logo_url: "", brand_color: "#0e108b", signature: "", footer: "" });
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  useEffect(() => {
+    supabase.from("email_settings").select("logo_url,brand_color,signature,footer").eq("project_id", project.id).maybeSingle()
+      .then(({ data }) => { if (data) setF({ logo_url: data.logo_url || "", brand_color: data.brand_color || "#0e108b", signature: data.signature || "", footer: data.footer || "" }); });
+  }, [project.id]);
+  const set = (k, v) => setF((c) => ({ ...c, [k]: v }));
+  const uploadLogo = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const path = `branding/${project.id}/logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("generated").upload(path, file, { upsert: false, contentType: file.type });
+    if (error) { toast(error.message, "err"); setUploading(false); return; }
+    const url = supabase.storage.from("generated").getPublicUrl(path).data.publicUrl;
+    set("logo_url", url); setUploading(false); toast(t("common.save"));
+  };
+  const save = async () => {
+    setBusy(true);
+    const { error } = await supabase.from("email_settings").upsert({ project_id: project.id, logo_url: f.logo_url, brand_color: f.brand_color, signature: f.signature, footer: f.footer }, { onConflict: "project_id" });
+    setBusy(false);
+    if (error) toast(error.message, "err"); else toast(t("common.save"));
+  };
+  return (
+    <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
+      <div className="card">
+        <div className="section-title">{t("mail.editor")}</div>
+        <Field label={t("mail.logo")} hint={t("mail.logoHint")}>
+          <input value={f.logo_url} onChange={(e) => set("logo_url", e.target.value)} placeholder="https://…/logo.png" />
+          <div className="row" style={{ alignItems: "center", gap: 10, marginTop: 8 }}>
+            <label className="btn sm" style={{ cursor: "pointer" }}>
+              {uploading ? <Spinner /> : <Icon.plus />} {t("mail.upload")}
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => uploadLogo(e.target.files?.[0])} />
+            </label>
+            {f.logo_url && <img src={f.logo_url} alt="" style={{ height: 28, borderRadius: 6 }} />}
+          </div>
+        </Field>
+        <Field label={t("mail.color")}><input type="color" value={f.brand_color} onChange={(e) => set("brand_color", e.target.value)} style={{ width: 56, height: 38, padding: 3 }} /></Field>
+        <Field label={t("mail.signature")}><textarea value={f.signature} onChange={(e) => set("signature", e.target.value)} placeholder={"Pozdrawiam,\nJan Kowalski\nFirma Sp. z o.o."} /></Field>
+        <Field label={t("mail.footer")}><textarea value={f.footer} onChange={(e) => set("footer", e.target.value)} style={{ minHeight: 60 }} placeholder="Firma Sp. z o.o., ul. ..., NIP ... · Aby zrezygnować, odpowiedz STOP." /></Field>
+        <button className="btn primary" onClick={save} disabled={busy}>{busy ? <Spinner /> : t("mail.save")}</button>
+      </div>
+      <div>
+        <div className="section-title">{t("mail.preview")}</div>
+        <MailPreview f={f} project={project} />
+      </div>
+    </div>
+  );
+}
+
 export default function Leads() {
   const { project } = useProject();
   const { t } = useT();
@@ -192,8 +263,11 @@ export default function Leads() {
       <div className="subtabs">
         <button className={"subtab" + (tab === "campaigns" ? " active" : "")} onClick={() => setTab("campaigns")}>{t("leads.campaigns")}</button>
         <button className={"subtab" + (tab === "leads" ? " active" : "")} onClick={() => setTab("leads")}>{t("leads.list")}</button>
+        <button className={"subtab" + (tab === "mails" ? " active" : "")} onClick={() => setTab("mails")}>{t("mail.editor")}</button>
       </div>
-      {tab === "campaigns" ? <Campaigns project={project} onRan={() => setTab("leads")} /> : <LeadsList project={project} />}
+      {tab === "campaigns" ? <Campaigns project={project} onRan={() => setTab("leads")} />
+        : tab === "mails" ? <MailEditor project={project} />
+        : <LeadsList project={project} />}
     </div>
   );
 }

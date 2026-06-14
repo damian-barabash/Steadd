@@ -3,42 +3,42 @@
 /* ============ THEME TOKENS ============ */
 :root,
 :root[data-theme="dark"] {
-  --primary: #0e108b;
-  --primary-2: #2a2ee0;
-  --accent: #6b6ef9;
-  --accent-2: #9aa0ff;
-  --accent-soft: rgba(107,110,249,0.16);
+  --primary: #15329e;          /* cobalt */
+  --primary-2: #1e46d6;
+  --accent: #4f7dff;           /* cobalt blue, readable on dark */
+  --accent-2: #93b4ff;
+  --accent-soft: rgba(79,125,255,0.16);
   --cta: #10b981;
-  --bg: #06060d;
-  --bg-2: #0a0b16;
-  --surface: #0f1122;
-  --surface-2: #161936;
-  --surface-3: #1d2042;
-  --border: rgba(130,135,220,0.14);
-  --border-2: rgba(130,135,220,0.26);
-  --text: #eef0fb;
-  --muted: #9aa0c4;
-  --muted-2: #6b7099;
+  --bg: #050813;               /* deep cobalt-tinted dark */
+  --bg-2: #070d1f;
+  --surface: #0c1430;
+  --surface-2: #121d3e;
+  --surface-3: #182651;
+  --border: rgba(90,125,235,0.16);
+  --border-2: rgba(90,125,235,0.30);
+  --text: #eef1fc;
+  --muted: #97a2cc;
+  --muted-2: #69739f;
   --green: #3ad29f;
   --red: #ff6b6b;
   --amber: #ffc36b;
-  --glass: rgba(12,13,28,0.62);
-  --glass-strong: rgba(12,13,28,0.82);
-  --shadow: 0 6px 24px rgba(0,0,0,0.34);
-  --shadow-lg: 0 24px 60px rgba(0,0,0,0.5);
-  --neuro: 107,110,249;       /* canvas line rgb */
-  --neuro-alpha: 0.34;
+  --glass: rgba(7,12,30,0.62);
+  --glass-strong: rgba(7,12,30,0.84);
+  --shadow: 0 6px 24px rgba(0,0,0,0.36);
+  --shadow-lg: 0 24px 60px rgba(2,6,30,0.55);
+  --neuro: 80,130,255;         /* cobalt canvas */
+  --neuro-alpha: 0.36;
   color-scheme: dark;
 }
 
 :root[data-theme="light"] {
-  --primary: #0e108b;
-  --primary-2: #3f43e6;
-  --accent: #4f53e8;
-  --accent-2: #6d72f2;
-  --accent-soft: rgba(79,83,232,0.12);
+  --primary: #1740c4;
+  --primary-2: #1d4ed8;
+  --accent: #1d4ed8;
+  --accent-2: #3b82f6;
+  --accent-soft: rgba(29,78,216,0.12);
   --cta: #0fae79;
-  --bg: #f6f7fc;
+  --bg: #f4f6fd;
   --bg-2: #eef0f8;
   --surface: #ffffff;
   --surface-2: #f4f5fb;
@@ -55,7 +55,7 @@
   --glass-strong: rgba(255,255,255,0.88);
   --shadow: 0 6px 24px rgba(40,40,90,0.10);
   --shadow-lg: 0 24px 60px rgba(40,40,90,0.16);
-  --neuro: 90,95,220;
+  --neuro: 37,99,235;
   --neuro-alpha: 0.22;
   color-scheme: light;
 }

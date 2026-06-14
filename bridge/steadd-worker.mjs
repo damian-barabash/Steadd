@@ -195,6 +195,26 @@ async function leadFind(job) {
   await log(job.id, job.project_id, `Znaleziono ${found.length} firm (${found.filter((x) => x.email).length} z e-mailem)`, { count: found.length }, "success");
   return { found: found.length };
 }
+function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>"); }
+function emailHtml(es, p, bodyText) {
+  const color = es.brand_color || "#0e108b";
+  const logo = es.logo_url ? `<img src="${es.logo_url}" alt="" style="height:30px;max-width:200px">` : `<strong style="color:#fff;font-size:18px">${esc(p?.business_name || p?.name)}</strong>`;
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#fff;color:#15151f;border:1px solid #eee;border-radius:10px;overflow:hidden">` +
+    `<div style="background:${color};padding:16px 20px">${logo}</div>` +
+    `<div style="padding:22px;font-size:15px;line-height:1.6">${esc(bodyText)}` +
+    (es.signature ? `<div style="margin-top:18px">${esc(es.signature)}</div>` : "") + `</div>` +
+    (es.footer ? `<div style="padding:12px 20px;border-top:1px solid #eee;color:#888;font-size:11px">${esc(es.footer)}</div>` : "") +
+    `</div>`;
+}
+async function sendResend(es, to, subject, html) {
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST", headers: { Authorization: `Bearer ${es.resend_api_key}`, "content-type": "application/json" },
+    body: JSON.stringify({ from: `${es.from_name || "Kontakt"} <${es.from_email}>`, to: [to], subject, html }),
+  });
+  if (!r.ok) throw new Error("RESEND_" + r.status + ": " + (await r.text()).slice(0, 200));
+  return r.json();
+}
+
 async function leadOutreach(job) {
   const { lead_id, template } = job.payload || {};
   const { data: lead } = await sb.from("leads").select("*").eq("id", lead_id).single();
@@ -205,10 +225,17 @@ async function leadOutreach(job) {
   const out = await brain([{ role: "system", content: sys }, { role: "user", content: usr }], { json: true, temperature: 0.7 });
   let msg = { subject: "Współpraca", body: out };
   try { const j = JSON.parse(out); msg = { subject: j.subject || "Współpraca", body: j.body || out }; } catch { /* */ }
+  // send via the client's Resend (branded HTML) if configured
+  const { data: es } = await sb.from("email_settings").select("*").eq("project_id", job.project_id).maybeSingle();
+  let sent = false;
+  if (es?.resend_api_key && es?.from_email && lead.email) {
+    try { await sendResend(es, lead.email, msg.subject, emailHtml(es, p, msg.body)); sent = true; }
+    catch (e) { await log(job.id, job.project_id, "Resend błąd: " + (e?.message || e), {}, "error"); }
+  }
   await sb.from("lead_messages").insert({ lead_id, project_id: job.project_id, direction: "outbound", channel: lead.source, subject: msg.subject, body: msg.body });
-  await sb.from("leads").update({ status: "contacted" }).eq("id", lead_id);
-  await log(job.id, job.project_id, "Przygotowano wiadomość (wysyłka po podłączeniu Resend)", { lead_id }, "success");
-  return { drafted: true };
+  await sb.from("leads").update({ status: sent ? "awaiting_reply" : "contacted" }).eq("id", lead_id);
+  await log(job.id, job.project_id, sent ? "Wysłano e-mail przez Resend" : "Przygotowano wiadomość (skonfiguruj Resend, by wysłać)", { lead_id }, "success");
+  return { sent, drafted: true };
 }
 
 // ---- Image generation via local ComfyUI (SDXL-Turbo on the Mac) ----

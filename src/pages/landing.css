@@ -18,7 +18,8 @@
 .lp-main { position: relative; z-index: 10; }
 .lp-wrap { max-width: 1080px; margin: 0 auto; padding: 0 5vw; }
 
-.lp-hero { text-align: center; padding: 90px 5vw 70px; position: relative; z-index: 10; }
+.lp-hero { text-align: center; padding: 240px 5vw 90px; position: relative; z-index: 10; }
+@media (max-width: 640px) { .lp-hero { padding: 150px 5vw 64px; } }
 .lp-h1 {
   font-family: var(--display); font-weight: 700; letter-spacing: -.02em; line-height: 1.04;
   font-size: clamp(38px, 7vw, 78px); margin: 0 auto 20px; max-width: 14ch;
