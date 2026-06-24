@@ -5,6 +5,7 @@ import { useTheme } from "../lib/theme";
 import { Icon, ThemeToggle, Modal, Field, Spinner, Logo } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import LandingChat from "../components/LandingChat";
+import NeuroBg from "../components/NeuroBg";
 import "./landing.css";
 
 function ContactModal({ c, onClose }) {
@@ -165,62 +166,6 @@ const L = {
   },
 };
 
-/* ---------------- Hero neural canvas (white lines on the blue band) ---------------- */
-function HeroCanvas() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const cv = ref.current, host = cv.parentElement, ctx = cv.getContext("2d");
-    const coarse = matchMedia("(pointer: coarse)").matches;
-    let raf, W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const mouse = { x: -999, y: -999 };
-    let nodes = [];
-    function resize() {
-      const r = host.getBoundingClientRect();
-      W = cv.width = r.width * dpr; H = cv.height = r.height * dpr;
-      cv.style.width = r.width + "px"; cv.style.height = r.height + "px";
-      const N = r.width < 700 ? 30 : 54;
-      nodes = Array.from({ length: N }, () => ({
-        x: Math.random() * W, y: Math.random() * H,
-        vx: (Math.random() - .5) * .22 * dpr, vy: (Math.random() - .5) * .22 * dpr,
-      }));
-    }
-    const D = () => 150 * dpr;
-    function frame() {
-      ctx.clearRect(0, 0, W, H);
-      const d = D();
-      for (const n of nodes) {
-        n.x += n.vx; n.y += n.vy;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        if (!coarse) {
-          const mx = (mouse.x * dpr) - n.x, my = (mouse.y * dpr) - n.y, md = Math.hypot(mx, my);
-          if (md < 130 * dpr && md > 0) { n.x -= (mx / md) * 1.1; n.y -= (my / md) * 1.1; }
-        }
-      }
-      for (let i = 0; i < nodes.length; i++)
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j], dd = Math.hypot(a.x - b.x, a.y - b.y);
-          if (dd < d) {
-            ctx.strokeStyle = `rgba(255,255,255,${(1 - dd / d) * 0.30})`;
-            ctx.lineWidth = dpr; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
-        }
-      for (const n of nodes) {
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.beginPath(); ctx.arc(n.x, n.y, 1.7 * dpr, 0, 7); ctx.fill();
-      }
-      raf = requestAnimationFrame(frame);
-    }
-    resize(); frame();
-    const onMove = (e) => { const r = host.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; };
-    const onLeave = () => { mouse.x = -999; mouse.y = -999; };
-    if (!coarse) { host.addEventListener("mousemove", onMove); host.addEventListener("mouseleave", onLeave); }
-    addEventListener("resize", resize);
-    return () => { cancelAnimationFrame(raf); host.removeEventListener("mousemove", onMove); host.removeEventListener("mouseleave", onLeave); removeEventListener("resize", resize); };
-  }, []);
-  return <canvas ref={ref} className="lp-hero-canvas" aria-hidden="true" />;
-}
-
 /* ---------------- Chat demo ---------------- */
 const CHAT = {
   pl: [["u", "Cześć! Macie wolny termin w sobotę?"], ["a", "Cześć! 👋 Tak, mamy wolne o 12:00 i 15:30. Którą wybierasz?"], ["u", "15:30 proszę"], ["a", "Zarezerwowane na 15:30 ✅ Do zobaczenia!"]],
@@ -368,7 +313,7 @@ export default function Landing() {
       <main className="lp-main">
         {/* ===== HERO (blue band) ===== */}
         <header className="lp-band lp-hero">
-          <HeroCanvas />
+          <NeuroBg scoped color="255,255,255" alpha={0.5} />
           <div className="lp-hero-inner">
             <div className="lp-eyebrow onband">{c.eyebrow}</div>
             <h1 className="lp-h1">{c.h1a}<br />{c.h1b}</h1>
