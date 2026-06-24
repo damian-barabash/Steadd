@@ -4,14 +4,14 @@ const KEY = "steadd_theme";
 const ThemeCtx = createContext(null);
 
 export function getStoredTheme() {
-  return localStorage.getItem(KEY) || "dark"; // dark is the default
+  return localStorage.getItem(KEY) || "light"; // light matches the mailing/offer look
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getStoredTheme);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#f6f7fc" : "#06060d");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#1b2de0" : "#06060d");
   }, [theme]);
   const setTheme = useCallback((t) => { localStorage.setItem(KEY, t); setThemeState(t); }, []);
   const toggle = useCallback(() => setTheme(getStoredTheme() === "dark" ? "light" : "dark"), [setTheme]);
