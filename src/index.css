@@ -276,3 +276,74 @@ label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px
   .stat .n { font-size: 24px; }
   .page-title { font-size: 21px; }
 }
+
+/* ============================================================
+   PANEL — offer-document look: square corners + offer cobalt
+   Scoped to .shell so the landing / login stay untouched.
+   ============================================================ */
+.shell {
+  --offer-blue: #1b2de0;        /* the cobalt from the printed offer */
+  --offer-blue-2: #1726d6;
+  --accent: #1b2de0;
+  --accent-2: #4f63ff;
+  --primary: #1726d6;
+  --primary-2: #1b2de0;
+  --accent-soft: rgba(27,45,224,0.12);
+}
+
+/* remove roundings on every panel surface (keep status dots / spinners round) */
+.shell .card,
+.shell .card.pad-lg,
+.shell .stat,
+.shell .list-item,
+.shell .sidebar,
+.shell .topbar,
+.shell .topbar.scrolled,
+.shell .navlink,
+.shell .btn,
+.shell .btn.sm,
+.shell .iconbtn,
+.shell .theme-toggle,
+.shell .badge,
+.shell input,
+.shell textarea,
+.shell select,
+.shell .switcher select,
+.shell .subtab,
+.shell .chat-wrap,
+.shell .bubble,
+.shell .codeblock,
+.shell .modal,
+.shell .toast,
+.shell .skeleton {
+  border-radius: 0 !important;
+}
+.shell .dot,
+.shell .spin,
+.shell .stat::after { border-radius: 50% !important; }
+
+/* offer cobalt — stronger presence than the soft default */
+.shell .navlink.active {
+  background: var(--offer-blue); color: #fff;
+  box-shadow: none;
+}
+.shell .navlink.active .ico { color: #fff; }
+
+.shell .btn.primary {
+  background: var(--offer-blue); border-color: var(--offer-blue);
+  box-shadow: none;
+}
+.shell .btn.primary:hover { background: var(--offer-blue-2); filter: none; }
+
+.shell .stat { border-top: 3px solid var(--offer-blue); }
+.shell .stat::after { display: none; }        /* drop the soft blob — cleaner editorial */
+.shell .stat .n { color: var(--offer-blue); }
+
+.shell .subtab.active { border-bottom-color: var(--offer-blue); }
+.shell .badge.indigo { color: var(--offer-blue); }
+
+/* keep the header a clean full-width editorial bar (no floating pill) */
+.shell .topbar.scrolled {
+  margin: 0; border: 0; border-bottom: 1px solid var(--border);
+  box-shadow: none; background: var(--glass-strong);
+}
