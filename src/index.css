@@ -28,6 +28,8 @@
   --shadow-lg: 0 24px 60px rgba(2,6,30,0.55);
   --neuro: 80,130,255;         /* cobalt canvas */
   --neuro-alpha: 0.36;
+  --sel-bg: #4f7dff;           /* text selection — solid, high-contrast */
+  --sel-fg: #06102b;           /* dark navy text on bright cobalt */
   color-scheme: dark;
 }
 
@@ -57,6 +59,8 @@
   --shadow-lg: 0 24px 60px rgba(27,45,224,0.14);
   --neuro: 27,45,224;
   --neuro-alpha: 0.16;
+  --sel-bg: #1b2de0;           /* deep cobalt selection */
+  --sel-fg: #ffffff;           /* white text on deep cobalt */
   color-scheme: light;
 }
 
@@ -90,7 +94,15 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); box-sha
 textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
 label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .02em; }
 ::placeholder { color: var(--muted-2); }
-::selection { background: var(--accent-soft); }
+/* text selection — solid contrasting fill so it is visible everywhere, incl. inputs */
+::selection { background: var(--sel-bg); color: var(--sel-fg); text-shadow: none; }
+::-moz-selection { background: var(--sel-bg); color: var(--sel-fg); text-shadow: none; }
+input::selection, textarea::selection, select::selection, [contenteditable]::selection {
+  background: var(--sel-bg); color: var(--sel-fg);
+}
+input::-moz-selection, textarea::-moz-selection, [contenteditable]::-moz-selection {
+  background: var(--sel-bg); color: var(--sel-fg);
+}
 
 /* ---------- buttons ---------- */
 .btn {
