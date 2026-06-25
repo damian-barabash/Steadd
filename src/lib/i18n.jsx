@@ -184,8 +184,22 @@ const DICT = {
 
 const LangContext = createContext(null);
 
+// Pick the initial language: a manual choice (saved) always wins; otherwise follow the device
+// language — Polish for `pl*`, English for `en*`, and Polish as the fallback for anything else.
+function detectInitialLang() {
+  const saved = localStorage.getItem("steadd_lang");
+  if (saved === "pl" || saved === "en") return saved;
+  const candidates = (typeof navigator !== "undefined" && (navigator.languages?.length ? navigator.languages : [navigator.language])) || [];
+  for (const c of candidates) {
+    const code = String(c || "").toLowerCase().slice(0, 2);
+    if (code === "pl") return "pl";
+    if (code === "en") return "en";
+  }
+  return "pl";
+}
+
 export function LangProvider({ children }) {
-  const [lang, setLangState] = useState(() => localStorage.getItem("steadd_lang") || "pl");
+  const [lang, setLangState] = useState(detectInitialLang);
   const setLang = useCallback((l) => { localStorage.setItem("steadd_lang", l); setLangState(l); }, []);
   const t = useCallback((key, vars) => {
     let s = DICT[lang]?.[key] ?? DICT.pl[key] ?? key;
