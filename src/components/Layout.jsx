@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { useProject } from "../lib/project";
 import { useT } from "../lib/i18n";
 import { Icon, Spinner, ThemeToggle, Logo } from "./ui";
+import MailingModal from "./MailingModal";
 import { useEffect } from "react";
 
 function NoProject({ admin }) {
@@ -26,6 +27,7 @@ export default function Layout() {
   const { t, lang, setLang } = useT();
   const loc = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mailingOpen, setMailingOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const f = () => setScrolled((window.scrollY || 0) > 8);
@@ -80,6 +82,11 @@ export default function Layout() {
           )}
 
           <div className="spacer" />
+          {isAdmin && (
+            <button className="btn primary sm mailing-btn" onClick={() => setMailingOpen(true)}>
+              <Icon.mail /> <span className="mailing-btn-label">Mailing</span>
+            </button>
+          )}
           <ThemeToggle />
           <button className="btn ghost sm" onClick={() => setLang(lang === "pl" ? "en" : "pl")}>
             <Icon.globe /> {lang === "pl" ? "PL" : "EN"}
@@ -87,6 +94,8 @@ export default function Layout() {
           <div className="badge indigo">{profile?.full_name || profile?.email}</div>
           {isAdmin && <div className="badge">{t("admin.role.admin")}</div>}
         </header>
+
+        {isAdmin && mailingOpen && <MailingModal onClose={() => setMailingOpen(false)} />}
 
         {loading ? <div className="center-screen"><Spinner /></div>
           : showNoProject ? <NoProject admin={isAdmin} />

@@ -15,6 +15,7 @@
  *   BRAIN_URL (default local gateway), BRAIN_KEY, BRAIN_MODEL, EMBED_MODEL, POLL_MS
  */
 import { createClient } from "@supabase/supabase-js";
+import crypto from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { writeFile, unlink } from "node:fs/promises";
@@ -299,6 +300,101 @@ async function imageGenerate(job) {
 
 const RUN = { content_generate: contentGenerate, chat_reply: chatReply, lead_classify: leadClassify, embed_doc: embedDoc, lead_find: leadFind, lead_outreach: leadOutreach, image_generate: imageGenerate };
 
+// ====================== ADMIN MAILING (newsletter) ======================
+// Paced, anti-spam sending of mail_campaigns via the global Resend key (from Jakub@steadd.pl).
+// State lives entirely in mail_campaigns / mail_recipients so it resumes after a restart.
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FROM_FALLBACK = "Jakub@steadd.pl";
+let mailBusy = false;
+
+const b64url = (s) => Buffer.from(s, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const hmacHex = (secret, msg) => crypto.createHmac("sha256", secret).update(msg).digest("hex");
+function unsubUrl(email, secret) {
+  const e = String(email || "").trim().toLowerCase(); // must match the edge fn (it lowercases before HMAC)
+  if (!secret) return `${URL}/functions/v1/mail-unsubscribe`;
+  return `${URL}/functions/v1/mail-unsubscribe?e=${b64url(e)}&s=${hmacHex(secret, e)}`;
+}
+function fillTokens(str, ctx) {
+  return String(str || "")
+    .replace(/{{\s*name\s*}}/g, ctx.name || "")
+    .replace(/{{\s*email\s*}}/g, ctx.email || "")
+    .replace(/{{\s*unsubscribe_url\s*}}/g, ctx.unsub || "");
+}
+async function loadSettings() {
+  const { data } = await sb.from("platform_settings").select("key,value");
+  const o = {}; (data || []).forEach((r) => (o[r.key] = r.value)); return o;
+}
+async function rcptCount(campaign_id, status, extra) {
+  let q = sb.from("mail_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", status);
+  if (extra) q = extra(q);
+  const { count } = await q; return count || 0;
+}
+async function sendMailResend({ apiKey, from, replyTo, to, subject, html, text, unsub }) {
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      from, to: [to], reply_to: replyTo, subject, html, ...(text ? { text } : {}),
+      headers: { "List-Unsubscribe": `<${unsub}>, <mailto:${replyTo}?subject=unsubscribe>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error("RESEND_" + r.status + ": " + JSON.stringify(j).slice(0, 200));
+  return j.id || null;
+}
+
+async function tickMail() {
+  if (mailBusy) return;
+  const { data: camps } = await sb.from("mail_campaigns").select("*").in("status", ["queued", "sending"]).order("created_at").limit(1);
+  const camp = camps?.[0];
+  if (!camp) return;
+  mailBusy = true;
+  try {
+    const st = await loadSettings();
+    const apiKey = st.resend_api_key;
+    if (!apiKey) { await sb.from("mail_campaigns").update({ status: "error", error: "Brak klucza API Resend (Mailing → Ustawienia)" }).eq("id", camp.id); return; }
+    const secret = st.unsub_secret || "";
+    const from = `${camp.from_name || st.mail_from_name || "Steadd"} <${camp.from_email || st.mail_from_email || FROM_FALLBACK}>`;
+    const replyTo = camp.reply_to || st.mail_reply_to || FROM_FALLBACK;
+    if (camp.status === "queued") await sb.from("mail_campaigns").update({ status: "sending", started_at: camp.started_at || new Date().toISOString() }).eq("id", camp.id);
+
+    const cnt = { sent: await rcptCount(camp.id, "sent"), failed: await rcptCount(camp.id, "failed"), skipped: await rcptCount(camp.id, "skipped") };
+    const sinceISO = () => new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    if (camp.daily_cap && (await rcptCount(camp.id, "sent", (q) => q.gte("sent_at", sinceISO()))) >= camp.daily_cap) return; // cap hit, resume later
+
+    const { data: pending } = await sb.from("mail_recipients").select("*").eq("campaign_id", camp.id).eq("status", "pending").order("id").limit(40);
+    if (!pending?.length) { await sb.from("mail_campaigns").update({ status: "done", finished_at: new Date().toISOString(), ...cnt }).eq("id", camp.id); return; }
+
+    const throttleMs = Math.max(0, (camp.throttle_seconds ?? 8) * 1000);
+    for (const rcp of pending) {
+      const { data: fresh } = await sb.from("mail_campaigns").select("status,daily_cap").eq("id", camp.id).single();
+      if (!fresh || ["paused", "done", "error"].includes(fresh.status)) break;
+
+      const { data: sup } = await sb.from("mail_suppression").select("email").eq("email", rcp.email).maybeSingle();
+      if (sup) {
+        await sb.from("mail_recipients").update({ status: "skipped", error: "suppressed" }).eq("id", rcp.id);
+        cnt.skipped++; await sb.from("mail_campaigns").update({ skipped: cnt.skipped }).eq("id", camp.id); continue;
+      }
+      const unsub = unsubUrl(rcp.email, secret);
+      const ctx = { name: rcp.name || "", email: rcp.email, unsub };
+      try {
+        const id = await sendMailResend({ apiKey, from, replyTo, to: rcp.email, subject: fillTokens(camp.subject, ctx), html: fillTokens(camp.html_compiled, ctx), text: camp.text_body ? fillTokens(camp.text_body, ctx) : null, unsub });
+        await sb.from("mail_recipients").update({ status: "sent", resend_id: id, sent_at: new Date().toISOString(), error: null }).eq("id", rcp.id);
+        cnt.sent++; await sb.from("mail_campaigns").update({ sent: cnt.sent }).eq("id", camp.id);
+      } catch (e) {
+        await sb.from("mail_recipients").update({ status: "failed", error: String(e?.message || e).slice(0, 300) }).eq("id", rcp.id);
+        cnt.failed++; await sb.from("mail_campaigns").update({ failed: cnt.failed }).eq("id", camp.id);
+      }
+      if (throttleMs) await sleep(throttleMs + Math.floor(Math.random() * Math.min(throttleMs, 2500))); // jitter -> looks human, dodges rate filters
+      if (fresh.daily_cap && (await rcptCount(camp.id, "sent", (q) => q.gte("sent_at", sinceISO()))) >= fresh.daily_cap) break;
+    }
+    if ((await rcptCount(camp.id, "pending")) === 0) {
+      const { data: fresh } = await sb.from("mail_campaigns").select("status").eq("id", camp.id).single();
+      if (fresh && fresh.status !== "paused") await sb.from("mail_campaigns").update({ status: "done", finished_at: new Date().toISOString() }).eq("id", camp.id);
+    }
+  } catch (e) { console.error("tickMail", e?.message || e); }
+  finally { mailBusy = false; }
+}
+
 // Auto-scheduler: enqueue lead_find for campaigns marked auto_daily, once per 24h.
 async function scheduleAuto() {
   const cutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
@@ -332,5 +428,7 @@ await login();
 console.log(`STEADD worker up. brain=${BRAIN_URL} model=${BRAIN_MODEL} poll=${POLL_MS}ms types=${TYPES.join(",")}`);
 setInterval(() => { tick().catch((e) => console.error("tick", e?.message || e)); }, POLL_MS);
 setInterval(() => { scheduleAuto().catch((e) => console.error("sched", e?.message || e)); }, 60000);
+setInterval(() => { tickMail().catch((e) => console.error("tickMail", e?.message || e)); }, 5000);
 tick();
 scheduleAuto();
+tickMail();
