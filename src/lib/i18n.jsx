@@ -19,7 +19,7 @@ const DICT = {
     // sidebar / tabs
     "tab.dashboard": "Przegląd", "tab.chatbot": "Chatbot", "tab.leads": "Pozyskiwanie leadów",
     "tab.content": "Treści", "tab.knowledge": "Biznes i baza wiedzy", "tab.settings": "Ustawienia",
-    "tab.admin": "Administracja",
+    "tab.admin": "Administracja", "inq.title": "Zgłoszenia",
     // project switcher
     "switch.viewing": "Projekt", "switch.viewAs": "Podgląd klienta", "switch.allProjects": "Wszystkie projekty",
     "noproject.title": "Projekt jest podłączany",
@@ -111,7 +111,7 @@ const DICT = {
     "login.error": "Wrong email or password", "login.back": "← Home",
     "tab.dashboard": "Overview", "tab.chatbot": "Chatbot", "tab.leads": "Lead generation",
     "tab.content": "Content", "tab.knowledge": "Business & knowledge", "tab.settings": "Settings",
-    "tab.admin": "Administration",
+    "tab.admin": "Administration", "inq.title": "Inquiries",
     "switch.viewing": "Project", "switch.viewAs": "Client view", "switch.allProjects": "All projects",
     "noproject.title": "Your project is being connected",
     "noproject.text": "Your account has no project yet. Hold on — we'll activate it shortly.",

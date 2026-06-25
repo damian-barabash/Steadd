@@ -5,6 +5,8 @@ import { useProject } from "../lib/project";
 import { useT } from "../lib/i18n";
 import { Icon, Spinner, ThemeToggle, Logo } from "./ui";
 import MailingModal from "./MailingModal";
+import InquiriesModal from "./InquiriesModal";
+import { supabase } from "../lib/supabase";
 import { useEffect } from "react";
 
 function NoProject({ admin }) {
@@ -28,6 +30,8 @@ export default function Layout() {
   const loc = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mailingOpen, setMailingOpen] = useState(false);
+  const [inquiriesOpen, setInquiriesOpen] = useState(false);
+  const [unreadInq, setUnreadInq] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const f = () => setScrolled((window.scrollY || 0) > 8);
@@ -36,6 +40,15 @@ export default function Layout() {
   }, []);
 
   const isAdmin = role === "admin";
+
+  // live count of new (unhandled) landing inquiries — badge on the "Zgłoszenia" button
+  useEffect(() => {
+    if (!isAdmin) return;
+    const load = () => supabase.from("contact_requests").select("*", { count: "exact", head: true }).eq("status", "new").then((r) => setUnreadInq(r.count || 0));
+    load();
+    const ch = supabase.channel("inq-badge").on("postgres_changes", { event: "*", schema: "public", table: "contact_requests" }, load).subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [isAdmin]);
   const allLinks = [
     { to: "/panel", end: true, icon: Icon.dashboard, label: t("tab.dashboard") },
     { to: "/panel/chatbot", icon: Icon.chat, label: t("tab.chatbot"), feat: "feat_chatbot" },
@@ -83,9 +96,15 @@ export default function Layout() {
 
           <div className="spacer" />
           {isAdmin && (
-            <button className="btn primary sm mailing-btn" onClick={() => setMailingOpen(true)}>
-              <Icon.mail /> <span className="mailing-btn-label">Mailing</span>
-            </button>
+            <>
+              <button className="btn primary sm mailing-btn" onClick={() => setMailingOpen(true)}>
+                <Icon.mail /> <span className="mailing-btn-label">Mailing</span>
+              </button>
+              <button className="btn sm mailing-btn-alt" onClick={() => setInquiriesOpen(true)}>
+                <Icon.inbox /> <span className="mailing-btn-label">{t("inq.title")}</span>
+                {unreadInq > 0 && <span className="inq-badge">{unreadInq}</span>}
+              </button>
+            </>
           )}
           <ThemeToggle />
           <button className="btn ghost sm" onClick={() => setLang(lang === "pl" ? "en" : "pl")}>
@@ -96,10 +115,11 @@ export default function Layout() {
         </header>
 
         {isAdmin && mailingOpen && <MailingModal onClose={() => setMailingOpen(false)} />}
+        {isAdmin && inquiriesOpen && <InquiriesModal onClose={() => setInquiriesOpen(false)} />}
 
         {loading ? <div className="center-screen"><Spinner /></div>
           : showNoProject ? <NoProject admin={isAdmin} />
-          : <Outlet />}
+          : <div key={projectId || "none"} className="route-wrap"><Outlet /></div>}
       </div>
     </div>
   );

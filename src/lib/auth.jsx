@@ -15,17 +15,25 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
       setSession(data.session);
-      await loadProfile(data.session?.user?.id);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+    // IMPORTANT: do NOT await Supabase queries inside this callback — supabase-js v2 holds an
+    // auth lock during it, and an awaited query here deadlocks the first load (blank page until
+    // refresh). Just update the session synchronously; the profile loads in the effect below.
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
-      await loadProfile(s?.user?.id);
+      setLoading(false);
     });
-    return () => sub.subscription.unsubscribe();
-  }, [loadProfile]);
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, []);
+
+  // Load the profile whenever the signed-in user changes — outside the auth callback, so no lock.
+  const uid = session?.user?.id || null;
+  useEffect(() => { loadProfile(uid); }, [uid, loadProfile]);
 
   const signOut = useCallback(async () => { await supabase.auth.signOut(); }, []);
   const reloadProfile = useCallback(() => loadProfile(session?.user?.id), [session, loadProfile]);

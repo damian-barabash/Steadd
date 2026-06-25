@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./lib/auth";
 import { Spinner } from "./components/ui";
 import NeuroBg from "./components/NeuroBg";
@@ -20,10 +20,17 @@ function Protected({ children }) {
   return children;
 }
 
+// The neuro background belongs to the public site only — keep the panel clean.
+function GlobalBg() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/panel")) return null;
+  return <NeuroBg />;
+}
+
 export default function App() {
   return (
     <>
-    <NeuroBg />
+    <GlobalBg />
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
