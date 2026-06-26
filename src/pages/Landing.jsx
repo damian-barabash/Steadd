@@ -329,15 +329,17 @@ export default function Landing() {
         <div className="lp-wrap">
           {/* ===== PROBLEM ===== */}
           <section className="lp-sec lp-narrow">
-            <div className="lp-eyebrow">{c.probEye}</div>
-            <h2 className="lp-h2">{c.probH}</h2>
-            <p className="lp-lead">{c.probP1}</p>
-            <p className="lp-lead" style={{ marginTop: 16 }}>{c.probP2}</p>
+            <div className="lp-scrim">
+              <div className="lp-eyebrow">{c.probEye}</div>
+              <h2 className="lp-h2">{c.probH}</h2>
+              <p className="lp-lead">{c.probP1}</p>
+              <p className="lp-lead" style={{ marginTop: 16 }}>{c.probP2}</p>
+            </div>
           </section>
 
           {/* ===== SERVICES ===== */}
           <section id="services" className="lp-sec">
-            <div className="lp-sec-head">
+            <div className="lp-sec-head lp-scrim">
               <div className="lp-eyebrow">{c.srvEye}</div>
               <h2 className="lp-h2">{c.srvH}</h2>
             </div>
@@ -348,7 +350,7 @@ export default function Landing() {
 
           {/* ===== HOW IT WORKS ===== */}
           <section className="lp-sec">
-            <div className="lp-sec-head">
+            <div className="lp-sec-head lp-scrim">
               <div className="lp-eyebrow">{c.howEye}</div>
               <h2 className="lp-h2">{c.howH}</h2>
             </div>
@@ -361,7 +363,7 @@ export default function Landing() {
 
           {/* ===== WHY STEADD ===== */}
           <section className="lp-sec">
-            <div className="lp-sec-head">
+            <div className="lp-sec-head lp-scrim">
               <div className="lp-eyebrow">{c.whyEye}</div>
               <h2 className="lp-h2">{c.whyH}</h2>
             </div>
@@ -374,7 +376,7 @@ export default function Landing() {
 
           {/* ===== STATS ===== */}
           <section className="lp-sec">
-            <div className="lp-sec-head">
+            <div className="lp-sec-head lp-scrim">
               <div className="lp-eyebrow">{c.statEye}</div>
               <h2 className="lp-h2">{c.statH}</h2>
             </div>
@@ -383,13 +385,15 @@ export default function Landing() {
                 <div key={i} className="lp-statcard"><div className="v">{v}</div><div className="l">{l}</div></div>
               ))}
             </div>
-            <p className="lp-note">{c.statNote}</p>
+            <p className="lp-note lp-scrim">{c.statNote}</p>
           </section>
 
           {/* ===== FAQ ===== */}
           <section className="lp-sec lp-narrow">
-            <div className="lp-eyebrow">{c.faqEye}</div>
-            <h2 className="lp-h2" style={{ marginBottom: 22 }}>{c.faqH}</h2>
+            <div className="lp-scrim">
+              <div className="lp-eyebrow">{c.faqEye}</div>
+              <h2 className="lp-h2" style={{ marginBottom: 22 }}>{c.faqH}</h2>
+            </div>
             <Faq items={c.faq} />
           </section>
         </div>

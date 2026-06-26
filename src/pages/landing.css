@@ -63,6 +63,18 @@
 .lp-narrow { max-width: 760px; margin: 0 auto; }
 .lp-lead { font-size: clamp(16px, 2vw, 19px); line-height: 1.6; color: var(--muted); }
 
+/* soft readable backing for bare text that sits over the neuro canvas —
+   a feathered clearing in the same colour as the page bg (theme-adaptive),
+   so the network lines stop fighting the copy. Not a visible card. */
+.lp-scrim { position: relative; isolation: isolate; }
+.lp-scrim::before {
+  content: ""; position: absolute; z-index: -1; inset: -22px -34px; pointer-events: none;
+  background: var(--bg); opacity: .9; border-radius: 30px;
+  filter: blur(16px);
+}
+.lp-note.lp-scrim { display: inline-block; }
+.lp-note.lp-scrim::before { inset: -10px -20px; }
+
 /* ---------- service pillars (numbered like the offer) ---------- */
 .lp-pillars { display: grid; gap: 30px; }
 .lp-pillar {
