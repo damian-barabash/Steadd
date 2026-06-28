@@ -431,3 +431,38 @@ input::-moz-selection, textarea::-moz-selection, [contenteditable]::-moz-selecti
   .ml-frame { height: 380px; }
   .mailing-btn-label { display: none; }
 }
+
+/* ---------------- Analytics tab ---------------- */
+.an-period { display: inline-flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 999px; border: 1px solid var(--border); }
+.an-period-btn {
+  border: 0; background: none; color: var(--muted); cursor: pointer;
+  font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 999px; transition: background .15s, color .15s;
+}
+.an-period-btn:hover { color: var(--text); }
+.an-period-btn.active { background: var(--accent); color: #fff; }
+
+.an-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+.an-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.an-dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.an-dot.v { background: var(--accent); }
+.an-dot.p { background: var(--accent-2); }
+
+.an-chart { display: flex; align-items: flex-end; gap: 3px; height: 180px; overflow: hidden; }
+.an-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.an-bars { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 2px; width: 100%; min-height: 0; }
+.an-bar { width: 42%; max-width: 13px; min-height: 2px; border-radius: 3px 3px 0 0; transition: height .25s ease; }
+.an-bar.v { background: var(--accent); }
+.an-bar.p { background: var(--accent-2); opacity: .82; }
+.an-xlabel { margin-top: 6px; font-size: 9.5px; color: var(--muted-2); white-space: nowrap; transform: rotate(0deg); }
+
+.an-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.an-row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.an-row-label { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-row-val { font-size: 12.5px; white-space: nowrap; }
+.an-track { height: 7px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.an-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; transition: width .3s ease; }
+
+@media (max-width: 720px) {
+  .an-grid2 { grid-template-columns: 1fr; }
+  .an-xlabel { display: none; }
+}

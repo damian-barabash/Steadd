@@ -59,10 +59,11 @@ export default function Layout() {
   ];
   // clients only see enabled function tabs; admins always see all (to manage)
   const links = allLinks.filter((l) => !l.feat || isAdmin || project?.[l.feat] !== false);
+  if (isAdmin) links.push({ to: "/panel/analytics", icon: Icon.chart, label: t("tab.analytics") });
   if (isAdmin) links.push({ to: "/panel/admin", icon: Icon.admin, label: t("tab.admin") });
 
   const section = loc.pathname.replace("/panel", "").replace("/", "") || "dashboard";
-  const needsProject = !["settings", "admin"].includes(section);
+  const needsProject = !["settings", "admin", "analytics"].includes(section);
   const showNoProject = needsProject && !loading && !project;
 
   return (
