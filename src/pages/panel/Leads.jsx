@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useAuth } from "../../lib/auth";
 import { useT } from "../../lib/i18n";
-import { Field, Modal, Spinner, useToast, Icon, SkeletonList } from "../../components/ui";
+import { Field, Modal, Spinner, useToast, Icon, SkeletonList, PageHead, EmptyState, Hint } from "../../components/ui";
 
 const SOURCES = ["maps", "email", "linkedin", "facebook"];
 
@@ -49,14 +49,15 @@ function Campaigns({ project, onRan }) {
 
   return (
     <div>
-      <div className="card" style={{ marginBottom: 18, borderColor: "var(--border-2)" }}>
-        <p className="small muted">{t("leads.flow")}</p>
-      </div>
+      <Hint>{t("leads.flow")}</Hint>
       <div className="between" style={{ marginBottom: 14 }}>
         <div className="section-title" style={{ margin: 0 }}>{t("leads.campaigns")}</div>
         <button className="btn primary sm" onClick={() => setOpen(true)}><Icon.plus /> {t("leads.newCampaign")}</button>
       </div>
-      {loading ? <SkeletonList n={2} h={88} /> : items.length === 0 ? <p className="muted small">{t("common.none")}</p> : (
+      {loading ? <SkeletonList n={2} h={88} /> : items.length === 0 ? (
+        <EmptyState icon={Icon.leads} title={t("leads.emptyCampTitle")} text={t("leads.emptyCampText")}
+          action={<><Icon.plus /> {t("leads.newCampaign")}</>} onAction={() => setOpen(true)} />
+      ) : (
         <div className="grid">
           {items.map((c) => (
             <div key={c.id} className="card">
@@ -133,7 +134,7 @@ function LeadsList({ project }) {
   };
 
   if (loading) return <SkeletonList n={4} h={56} />;
-  if (items.length === 0) return <p className="muted small">{t("leads.noLeads")}</p>;
+  if (items.length === 0) return <EmptyState icon={Icon.leads} title={t("leads.emptyLeadsTitle")} text={t("leads.emptyLeadsText")} />;
   return (
     <div>
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -225,7 +226,7 @@ function MailEditor({ project }) {
     if (error) toast(error.message, "err"); else toast(t("common.save"));
   };
   return (
-    <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
+    <div className="cols-2">
       <div className="card">
         <div className="section-title">{t("mail.editor")}</div>
         <Field label={t("mail.logo")} hint={t("mail.logoHint")}>
@@ -258,8 +259,7 @@ export default function Leads() {
   if (!project) return null;
   return (
     <div className="content">
-      <h1 className="page-title">{t("leads.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{project.name}</p>
+      <PageHead title={t("leads.title")} sub={t("page.sub.leads")} project={project.name} />
       <div className="subtabs">
         <button className={"subtab" + (tab === "campaigns" ? " active" : "")} onClick={() => setTab("campaigns")}>{t("leads.campaigns")}</button>
         <button className={"subtab" + (tab === "leads" ? " active" : "")} onClick={() => setTab("leads")}>{t("leads.list")}</button>

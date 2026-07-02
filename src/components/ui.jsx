@@ -80,11 +80,46 @@ export function SkeletonCard({ lines = 3 }) {
   );
 }
 
+/* ---------------- Page head (title + friendly explanation) ---------------- */
+export function PageHead({ title, sub, project }) {
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <h1 className="page-title">{title}</h1>
+      {sub && <p className="page-sub">{sub}</p>}
+      {project && <span className="badge indigo" style={{ marginTop: 8 }}>{project}</span>}
+    </div>
+  );
+}
+
+/* ---------------- Empty state (icon + title + hint + optional CTA) ---------------- */
+export function EmptyState({ icon: Ico, title, text, action, onAction }) {
+  return (
+    <div className="empty">
+      {Ico && <div className="empty-ico"><Ico /></div>}
+      {title && <div className="empty-title">{title}</div>}
+      {text && <p className="empty-text">{text}</p>}
+      {action && <button className="btn primary sm" style={{ marginTop: 14 }} onClick={onAction}>{action}</button>}
+    </div>
+  );
+}
+
+/* ---------------- Hint strip (soft inline explanation) ---------------- */
+export function Hint({ children, style }) {
+  return (
+    <div className="hint-strip" style={style}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none", marginTop: 2 }}>
+        <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+      <span>{children}</span>
+    </div>
+  );
+}
+
 /* ---------------- Field ---------------- */
-export function Field({ label, children, hint }) {
+export function Field({ label, children, hint, step }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      {label && <label>{label}</label>}
+      {label && <label>{step != null && <span className="step-n">{step}</span>}{label}</label>}
       {children}
       {hint && <div className="small muted" style={{ marginTop: 5 }}>{hint}</div>}
     </div>

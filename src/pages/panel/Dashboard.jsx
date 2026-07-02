@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useAuth } from "../../lib/auth";
 import { useT } from "../../lib/i18n";
-import { SkeletonStats, SkeletonList } from "../../components/ui";
+import { SkeletonStats, SkeletonList, EmptyState, Icon } from "../../components/ui";
 
 function timeAgo(ts) {
   const d = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -52,7 +52,7 @@ export default function Dashboard() {
   return (
     <div className="content">
       <h1 className="page-title">{t("dash.welcome")}, {profile?.full_name || profile?.email?.split("@")[0]}</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>{project.name}</p>
+      <p className="page-sub" style={{ marginBottom: 22 }}>{t("page.sub.dashboard")}</p>
 
       {loading ? <div style={{ marginBottom: 22 }}><SkeletonStats /></div> : (
       <div className="stats" style={{ marginBottom: 22 }}>
@@ -68,7 +68,9 @@ export default function Dashboard() {
           <h3 style={{ fontSize: 16 }}>{t("dash.activity")}</h3>
           <span className="badge green"><span className="dot pulse" /> {t("dash.live")}</span>
         </div>
-        {loading ? <SkeletonList n={5} h={18} /> : events.length === 0 ? <p className="muted small">{t("dash.noactivity")}</p> : (
+        {loading ? <SkeletonList n={5} h={18} /> : events.length === 0 ? (
+          <EmptyState icon={Icon.bolt} title={t("dash.emptyTitle")} text={t("dash.emptyText")} />
+        ) : (
           <div className="grid" style={{ gap: 8 }}>
             {events.map((e) => (
               <div key={e.id} className="row" style={{ alignItems: "baseline", fontSize: 13.5 }}>

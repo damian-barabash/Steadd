@@ -3,7 +3,7 @@ import { supabase, callFn } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useAuth } from "../../lib/auth";
 import { useT } from "../../lib/i18n";
-import { Field, Modal, Spinner, useToast, Icon, SkeletonList } from "../../components/ui";
+import { Field, Modal, Spinner, useToast, Icon, SkeletonList, PageHead, EmptyState } from "../../components/ui";
 
 function slugify(s) {
   return (s || "proj").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -77,8 +77,8 @@ export default function Admin() {
 
   return (
     <div className="content">
-      <h1 className="page-title">{t("admin.title")}</h1>
-      <div className="subtabs" style={{ marginTop: 14 }}>
+      <PageHead title={t("admin.title")} sub={t("page.sub.admin")} />
+      <div className="subtabs">
         <button className={"subtab" + (tab === "clients" ? " active" : "")} onClick={() => setTab("clients")}>{t("admin.clients")}</button>
         <button className={"subtab" + (tab === "projects" ? " active" : "")} onClick={() => setTab("projects")}>{t("admin.projects")}</button>
         <button className={"subtab" + (tab === "admins" ? " active" : "")} onClick={() => setTab("admins")}>{t("admin.admins")}</button>
@@ -92,7 +92,10 @@ export default function Admin() {
             <span className="muted small">{clients.length}</span>
             <button className="btn primary sm" onClick={() => setModal({ kind: "user", role: "client" })}><Icon.plus /> {t("admin.newClient")}</button>
           </div>
-          {clients.length === 0 ? <p className="muted small">{t("admin.noClients")}</p> : (
+          {clients.length === 0 ? (
+            <EmptyState icon={Icon.users} title={t("admin.noClients")}
+              action={<><Icon.plus /> {t("admin.newClient")}</>} onAction={() => setModal({ kind: "user", role: "client" })} />
+          ) : (
             <div className="card" style={{ padding: 0, overflow: "hidden" }}>
               <table className="tbl">
                 <thead><tr><th>{t("common.name")}</th><th>{t("common.email")}</th><th>{t("admin.projects")}</th><th></th></tr></thead>
@@ -128,7 +131,10 @@ export default function Admin() {
             <span className="muted small">{projects.length}</span>
             <button className="btn primary sm" onClick={() => setModal({ kind: "project" })}><Icon.plus /> {t("admin.newProject")}</button>
           </div>
-          {projects.length === 0 ? <p className="muted small">{t("admin.noProjects")}</p> : (
+          {projects.length === 0 ? (
+            <EmptyState icon={Icon.dashboard} title={t("admin.noProjects")}
+              action={<><Icon.plus /> {t("admin.newProject")}</>} onAction={() => setModal({ kind: "project" })} />
+          ) : (
             <div className="grid">
               {projects.map((p) => (
                 <div key={p.id} className="card">

@@ -466,3 +466,58 @@ input::-moz-selection, textarea::-moz-selection, [contenteditable]::-moz-selecti
   .an-grid2 { grid-template-columns: 1fr; }
   .an-xlabel { display: none; }
 }
+
+/* ============================================================
+   UX helpers — page subtitles, empty states, hints, chips
+   (presentation only; square corners to match the panel look)
+   ============================================================ */
+.page-sub { color: var(--muted); font-size: 14px; margin: 6px 0 0; max-width: 640px; line-height: 1.55; }
+
+/* friendly empty state */
+.empty {
+  border: 1px dashed var(--border-2); background: var(--surface);
+  padding: 34px 22px; text-align: center; display: flex; flex-direction: column; align-items: center;
+}
+.empty-ico {
+  width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); color: var(--accent); margin-bottom: 12px;
+}
+.empty-ico svg { width: 22px; height: 22px; }
+.empty-title { font-family: var(--display); font-weight: 600; font-size: 15.5px; }
+.empty-text { color: var(--muted); font-size: 13.5px; max-width: 420px; margin: 6px 0 0; line-height: 1.55; }
+
+/* soft inline hint strip */
+.hint-strip {
+  display: flex; gap: 9px; align-items: flex-start;
+  background: var(--accent-soft); color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding: 10px 13px; font-size: 13px; line-height: 1.5; margin-bottom: 16px;
+}
+.hint-strip svg { color: var(--accent); }
+
+/* selectable chips (format picker, example topics) */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border-2); background: var(--surface); color: var(--muted);
+  padding: 7px 12px; font-size: 12.5px; font-weight: 500; cursor: pointer;
+  transition: all .14s; line-height: 1;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip.ex { border-style: dashed; }
+.chip.ex:hover { background: var(--accent-soft); }
+
+/* responsive 2-column layouts (form + result / editor + preview) — stack on small screens */
+.gen-layout { display: grid; gap: 22px; grid-template-columns: minmax(0, 360px) 1fr; align-items: start; }
+.cols-2 { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 860px) {
+  .gen-layout, .cols-2 { grid-template-columns: 1fr; }
+}
+
+/* small step number in form labels */
+.step-n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 17px; height: 17px; margin-right: 7px;
+  background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 1;
+}

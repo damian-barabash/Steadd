@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase, FUNCTIONS_URL, SUPABASE_ANON } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useT } from "../../lib/i18n";
-import { Field, Modal, Spinner, useToast, copyText, Icon, SkeletonList } from "../../components/ui";
+import { Field, Modal, Spinner, useToast, copyText, Icon, SkeletonList, PageHead, EmptyState } from "../../components/ui";
 
 const CHANNELS = [
   { type: "web", idField: null },
@@ -49,7 +49,7 @@ function WebChannelCard({ project, channel, onSave, onTest, statusBadge, t, toas
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
+      <div className="cols-2">
         <div>
           <div className="section-title">{t("bot.appearance")}</div>
           <div className="row" style={{ gap: 12, marginBottom: 12 }}>
@@ -243,7 +243,11 @@ function Archetypes({ project }) {
         <p className="small muted" style={{ maxWidth: 600 }}>{t("bot.instructions")} — {t("bot.archetypes")}</p>
         <button className="btn primary sm" onClick={() => setEdit({ name: "", description: "", system_instructions: "", is_default: items.length === 0 })}><Icon.plus /> {t("bot.newArchetype")}</button>
       </div>
-      {items.length === 0 ? <p className="muted small">{t("common.none")}</p> : (
+      {items.length === 0 ? (
+        <EmptyState icon={Icon.chat} title={t("bot.emptyArchTitle")} text={t("bot.emptyArchText")}
+          action={<><Icon.plus /> {t("bot.newArchetype")}</>}
+          onAction={() => setEdit({ name: "", description: "", system_instructions: "", is_default: true })} />
+      ) : (
         <div className="grid">
           {items.map((a) => (
             <div key={a.id} className="card">
@@ -308,7 +312,10 @@ function Contacts({ project }) {
         <p className="small muted">{t("bot.contacts")} ({items.length})</p>
         <button className="btn primary sm" onClick={() => setOpen(true)}><Icon.plus /> {t("bot.importContacts")}</button>
       </div>
-      {items.length === 0 ? <p className="muted small">{t("common.none")}</p> : (
+      {items.length === 0 ? (
+        <EmptyState icon={Icon.users} title={t("bot.emptyContactsTitle")} text={t("bot.emptyContactsText")}
+          action={<><Icon.plus /> {t("bot.importContacts")}</>} onAction={() => setOpen(true)} />
+      ) : (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <table className="tbl">
             <thead><tr><th>{t("common.name")}</th><th>{t("common.email")}</th><th>Tel.</th><th>{t("leads.company")}</th></tr></thead>
@@ -356,7 +363,9 @@ function Conversations({ project }) {
 
   return (
     <div>
-      {loading ? <SkeletonList n={4} h={62} /> : items.length === 0 ? <p className="muted small">{t("bot.noConversations")}</p> : (
+      {loading ? <SkeletonList n={4} h={62} /> : items.length === 0 ? (
+        <EmptyState icon={Icon.chat} title={t("bot.emptyConvTitle")} text={t("bot.emptyConvText")} />
+      ) : (
         <div className="grid">
           {items.map((c) => (
             <div key={c.id} className="list-item clickable" onClick={() => openConv(c)}>
@@ -401,8 +410,7 @@ export default function Chatbot() {
   ];
   return (
     <div className="content">
-      <h1 className="page-title">{t("bot.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{project.name}</p>
+      <PageHead title={t("bot.title")} sub={t("page.sub.chatbot")} project={project.name} />
       <div className="subtabs">
         {tabs.map((x) => <button key={x.k} className={"subtab" + (tab === x.k ? " active" : "")} onClick={() => setTab(x.k)}>{x.label}</button>)}
       </div>

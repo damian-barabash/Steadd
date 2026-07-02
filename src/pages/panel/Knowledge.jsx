@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useAuth } from "../../lib/auth";
 import { useT } from "../../lib/i18n";
-import { Field, Modal, useToast, Icon, SkeletonList } from "../../components/ui";
+import { Field, Modal, useToast, Icon, SkeletonList, PageHead, EmptyState } from "../../components/ui";
 
 function Business({ project, reload }) {
   const { t } = useT();
@@ -65,10 +65,14 @@ function Docs({ project }) {
   return (
     <div>
       <div className="between" style={{ marginBottom: 14 }}>
-        <p className="small muted">{t("kb.noDocs")}</p>
+        <p className="small muted">{t("kb.docsHint")}</p>
         <button className="btn primary sm" onClick={() => setOpen(true)}><Icon.plus /> {t("kb.addDoc")}</button>
       </div>
       {loading && <SkeletonList n={3} h={70} />}
+      {!loading && items.length === 0 && (
+        <EmptyState icon={Icon.knowledge} title={t("kb.emptyDocsTitle")} text={t("kb.emptyDocsText")}
+          action={<><Icon.plus /> {t("kb.addDoc")}</>} onAction={() => setOpen(true)} />
+      )}
       <div className="grid">
         {!loading && items.map((d) => (
           <div key={d.id} className="card">
@@ -98,8 +102,7 @@ export default function Knowledge() {
   if (!project) return null;
   return (
     <div className="content">
-      <h1 className="page-title">{t("kb.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{project.name}</p>
+      <PageHead title={t("kb.title")} sub={t("page.sub.knowledge")} project={project.name} />
       <div className="subtabs">
         <button className={"subtab" + (tab === "business" ? " active" : "")} onClick={() => setTab("business")}>{t("kb.business")}</button>
         <button className={"subtab" + (tab === "docs" ? " active" : "")} onClick={() => setTab("docs")}>{t("kb.docs")}</button>

@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { useProject } from "../../lib/project";
 import { useAuth } from "../../lib/auth";
 import { useT } from "../../lib/i18n";
-import { Field, Spinner, useToast, copyText, Icon, SkeletonList } from "../../components/ui";
+import { Field, Spinner, useToast, copyText, Icon, SkeletonList, PageHead, EmptyState } from "../../components/ui";
 
 const FORMATS = ["instagram_post", "facebook_post", "linkedin_post", "blog_article", "email", "x_tweet", "story", "ad_copy"];
 
@@ -33,11 +33,12 @@ function ImageGen({ project, user }) {
   return (
     <div className="card" style={{ marginTop: 22 }}>
       <div className="section-title">{t("img.title")}</div>
+      <p className="small muted" style={{ margin: "0 0 12px" }}>{t("img.hint")}</p>
       <div className="row" style={{ gap: 8, marginBottom: 14 }}>
         <input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t("img.prompt")} onKeyDown={(e) => e.key === "Enter" && gen()} />
         <button className="btn primary" onClick={gen} disabled={busy || !prompt.trim()}>{busy ? <Spinner /> : <><Icon.bolt /> {t("img.generate")}</>}</button>
       </div>
-      {items.length === 0 ? <p className="muted small">{t("img.none")}</p> : (
+      {items.length === 0 ? <EmptyState icon={Icon.image} title={t("img.emptyTitle")} text={t("img.none")} /> : (
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 10 }}>
           {items.map((im) => (
             <div key={im.id} className="card" style={{ padding: 8 }}>
@@ -104,23 +105,34 @@ export default function Content() {
 
   if (!project) return null;
 
+  const examples = [t("content.ex1"), t("content.ex2"), t("content.ex3")];
+
   return (
     <div className="content">
-      <h1 className="page-title">{t("content.title")}</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>{project.name}</p>
+      <PageHead title={t("content.title")} sub={t("page.sub.content")} project={project.name} />
 
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0,360px) 1fr", alignItems: "start", gap: 22 }}>
+      <div className="gen-layout">
         <div className="card">
-          <Field label={t("content.topic")}>
+          <Field label={t("content.topic")} step={1}>
             <textarea value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="np. Promocja wiosenna -20%…" />
+            <div className="chips" style={{ marginTop: 8 }}>
+              <span className="small muted" style={{ alignSelf: "center" }}>{t("content.examples")}</span>
+              {examples.map((ex) => (
+                <button key={ex} type="button" className="chip ex" onClick={() => setTopic(ex)}>{ex}</button>
+              ))}
+            </div>
           </Field>
-          <Field label={t("content.format")}>
-            <select value={format} onChange={(e) => setFormat(e.target.value)}>
-              {FORMATS.map((f) => <option key={f} value={f}>{t("content.fmt." + f)}</option>)}
-            </select>
+          <Field label={t("content.format")} step={2}>
+            <div className="chips">
+              {FORMATS.map((f) => (
+                <button key={f} type="button" className={"chip" + (format === f ? " on" : "")} onClick={() => setFormat(f)}>
+                  {t("content.fmt." + f)}
+                </button>
+              ))}
+            </div>
           </Field>
-          <Field label={t("content.brief")} hint={t("common.optional")}>
-            <textarea value={brief} onChange={(e) => setBrief(e.target.value)} style={{ minHeight: 60 }} />
+          <Field label={t("content.brief")} step={3} hint={t("common.optional")}>
+            <textarea value={brief} onChange={(e) => setBrief(e.target.value)} style={{ minHeight: 60 }} placeholder="np. wspomnij o darmowej dostawie…" />
           </Field>
           <button className="btn primary block" onClick={generate} disabled={busy || !topic.trim()}>
             {busy ? <><Spinner /> {t("content.generating")}</> : <><Icon.bolt /> {t("content.generate")}</>}
@@ -129,7 +141,9 @@ export default function Content() {
 
         <div>
           <div className="section-title">{t("content.drafts")}</div>
-          {loading ? <SkeletonList n={3} h={90} /> : items.length === 0 ? <p className="muted small">{t("content.noDrafts")}</p> : (
+          {loading ? <SkeletonList n={3} h={90} /> : items.length === 0 ? (
+            <EmptyState icon={Icon.content} title={t("content.emptyTitle")} text={t("content.emptyText")} />
+          ) : (
             <div className="grid">
               {items.map((it) => (
                 <div key={it.id} className="card">
@@ -143,7 +157,7 @@ export default function Content() {
                   <strong style={{ display: "block", marginBottom: 6 }}>{it.title || it.topic}</strong>
                   {it.body
                     ? <div style={{ whiteSpace: "pre-wrap", fontSize: 14, color: "var(--text)" }}>{it.body}</div>
-                    : <div className="row" style={{ alignItems: "center", color: "var(--muted)" }}><Spinner /> <span className="small">{t("content.generating")}</span></div>}
+                    : <div className="row" style={{ alignItems: "center", color: "var(--muted)" }}><Spinner /> <span className="small">{t("content.working")}</span></div>}
                 </div>
               ))}
             </div>

@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { useProject } from "../../lib/project";
 import { useT } from "../../lib/i18n";
-import { Field, Modal, useToast, Icon } from "../../components/ui";
+import { Field, Modal, useToast, Icon, PageHead } from "../../components/ui";
 
 const ACCOUNT_KINDS = ["linkedin", "email", "instagram", "facebook", "whatsapp", "google", "other"];
 
@@ -134,8 +134,8 @@ export default function Settings() {
 
   return (
     <div className="content">
-      <h1 className="page-title">{t("set.title")}</h1>
-      <div className="grid" style={{ maxWidth: 640, marginTop: 16 }}>
+      <PageHead title={t("set.title")} sub={t("page.sub.settings")} />
+      <div className="grid" style={{ maxWidth: 640 }}>
         <EmailSettings />
         <ProjectAccounts />
         <div className="card">
